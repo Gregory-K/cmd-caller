@@ -1,5 +1,4 @@
 
-import os.path
 import subprocess
 import shlex
 
@@ -12,7 +11,7 @@ from .support import log
 # append text to view
 class AppendTextCommand(sublime_plugin.TextCommand):
   def run(self, edit, text):
-    log(self.__class__.__name__ + ':\n\t' + text)
+    log(f'{self.__class__.__name__}:\n\t{text}')
     self.view.insert(edit, self.view.size(), text)
 
 # execute one line of command
@@ -20,8 +19,8 @@ class CmdCaller(sublime_plugin.WindowCommand):
 
   # display output message
   def output(self, message):
-    log(self.__class__.__name__ + '#output')
-    message = '[CmdCaller] ' + message + '\n'
+    log(f'{self.__class__.__name__}#output')
+    message = f'[CmdCaller] {message}\n'
     panel = self.window.find_output_panel('cmd-caller')
     if not panel:
       panel = self.window.create_output_panel('cmd-caller')
@@ -30,16 +29,16 @@ class CmdCaller(sublime_plugin.WindowCommand):
 
   # display error message with cmd string
   def error(self, message, cmd):
-    log(self.__class__.__name__ + '#error')
-    self.output(message + ':\n\t' + cmd)
+    log(f'{self.__class__.__name__}#error')
+    self.output(f'{message}:\n\t{cmd}')
 
-  def get_settings(self, key, default = None):
-    log(self.__class__.__name__ + '#get_settings')
+  def get_settings(self, key, default=None):
+    log(f'{self.__class__.__name__}#get_settings')
     return settings.get(key, default)
 
   # run cmd
   def run_with_cmd(self, cmd):
-    log(self.__class__.__name__ + '#run_with_cmd\n\t' + cmd)
+    log(f'{self.__class__.__name__}#run_with_cmd\n\t{cmd}')
     # cmd: [str] and [list of str]
     if isinstance(cmd, list):
       cmd = ' '.join(str(c) for c in cmd)
@@ -49,9 +48,7 @@ class CmdCaller(sublime_plugin.WindowCommand):
     # replace variables
     disir = 'file file_name file_base_name file_extension file_path folder project_base_name'.split()
     dvars = self.window.extract_variables()
-    nvars = {}
-    for key in disir:
-      nvars[key] = dvars.get(key, '')
+    nvars = {key: dvars.get(key, '') for key in disir}
     cmd = sublime.expand_variables(cmd, nvars)
     # exec
     try:
@@ -64,7 +61,7 @@ class CmdCaller(sublime_plugin.WindowCommand):
 
   # run with app key
   def run_with_key(self, key):
-    log(self.__class__.__name__ + '#run_with_key\n\t' + key)
+    log(f'{self.__class__.__name__}#run_with_key\n\t{key}')
     cmd = self.get_settings('apps')[key]['cmd']
     self.run_with_cmd(cmd)
 
@@ -83,11 +80,11 @@ class CmdCallerListCommand(CmdCaller):
     log(self.__class__.__name__)
     apps = self.get_settings('apps')
     self.keys = list(apps.keys())
-    items = list(apps[key]['name'] if 'name' in apps[key] else key for key in self.keys)
+    items = [apps[key].get('name', key) for key in self.keys]
     self.window.show_quick_panel(items, self.on_select)
 
   def on_select(self, idx):
-    log(self.__class__.__name__ + '#on_select\n\t' + str(idx))
+    log(f'{self.__class__.__name__}#on_select\n\t{idx}')
     if idx < 0:
       return
     super().run_with_key(self.keys[idx])
