@@ -2,7 +2,7 @@
 # Cmd Caller
 
 from .support import (
-  log,
+  log, plugin_loaded,
   CmdCallerLoadLogsCommand, CmdCallerLoadLastLogsCommand)
 
 from .commands import (

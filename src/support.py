@@ -8,18 +8,26 @@ import sublime_plugin
 
 # log
 
-logfile = 'logs.txt'
-lastlogfile = 'logs.last.txt'
+# Log files in Sublime Text's cache folder, set by plugin_loaded().
+logfile = None
+lastlogfile = None
 
-prefix = os.path.normpath(os.path.join(os.path.expanduser('~'), 'cmd-caller-'))
-logfile = f'{prefix}{logfile}'
-lastlogfile = f'{prefix}{lastlogfile}'
-if os.path.exists(lastlogfile):
-  os.remove(lastlogfile)
-if os.path.exists(logfile):
-  os.rename(logfile, lastlogfile)
+
+def plugin_loaded():
+  global logfile, lastlogfile
+  folder = os.path.join(sublime.cache_path(), 'cmd-caller')
+  os.makedirs(folder, exist_ok=True)
+  logfile = os.path.join(folder, 'logs.txt')
+  lastlogfile = os.path.join(folder, 'logs.last.txt')
+  if os.path.exists(lastlogfile):
+    os.remove(lastlogfile)
+  if os.path.exists(logfile):
+    os.rename(logfile, lastlogfile)
+
 
 def log(message):
+  if logfile is None:
+    return
   with open(logfile, 'ab') as f:
     f.write(f'{message}\n'.encode('utf-8'))
 
